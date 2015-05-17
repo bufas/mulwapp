@@ -1,0 +1,31 @@
+{
+  "name": "Mulwapp",
+  "version": "0.0.2",
+  "description": "Multi-user WebGL applications",
+  "main": "src/mulwapp.js",
+
+  "dependencies": {
+    "three": "^0.71.0",
+    "share": "^0.6.3"
+  },
+
+  "devDependencies": {
+    "buster": "^0.7.18",
+    "proxyquire": "^1.4.0"
+  },
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bufas/mulwapp.git"
+  },
+
+  "bugs": {
+    "url": "https://github.com/bufas/mulwapp/issues"
+  },
+
+  "homepage": "https://github.com/bufas/mulwapp"
+}
