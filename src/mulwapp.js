@@ -166,5 +166,7 @@ Mulwapp.prototype.diff = function (diffModel, syncModel, rootGuid) {
  * @param {Array} operations - An array of operations
  */
 Mulwapp.prototype.handleRemoteOperations = function (operations) {
-  operations.forEach(this.lal.updateModel);
+  operations.forEach(function (op) {
+    this.lal.modelUpdater(op);
+  }, this);
 }
