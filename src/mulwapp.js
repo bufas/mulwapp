@@ -21,9 +21,10 @@
  */
 Mulwapp = function (Lal, SyncAdapter, config) {
   var _this = this;
+  this.applicationInitializationOngoing = true;
 
   this.lal = new Lal(config.lal);
-  this.lal.initialize();
+  this.lal.initialize(this);
 
   this.syncIsReady = false;
   this.syncAdapter = new SyncAdapter(config.sync);
@@ -38,6 +39,14 @@ Mulwapp = function (Lal, SyncAdapter, config) {
  */
 Mulwapp.prototype.animationFrameFn = function (root) {
   if (!this.syncIsReady) return;
+
+  // Check if the app has just been initialized
+  if (this.applicationInitializationOngoing) {
+    // TODO update local model from remote snapshot
+    this.applicationInitializationOngoing = false;
+    return;
+  }
+
   var diffModel = this.lal.calculateDiffModel(root);
   var syncModel = this.syncAdapter.getSnapshot();
   var diff = this.diff(diffModel, syncModel, root.mulwapp_guid);

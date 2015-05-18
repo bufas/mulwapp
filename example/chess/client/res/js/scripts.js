@@ -6,15 +6,11 @@ var mulwapp = new Mulwapp(
   SharejsAdapter, 
   {
     lal: {
-      constructors: [
-        'Mesh',
-      ],
       shareConf: function(node, path, root) {
         var res = {'watch_props': []};
 
         if (node.type == 'Mesh' && path[0] > 2) {
           res.watch_props = [
-            'visible',
             'position.x',
             'position.y',
             'position.z',

@@ -15,9 +15,9 @@ ThreeAdapter = function (config) {
 /**
  *
  */
-ThreeAdapter.prototype.initialize = function () {
+ThreeAdapter.prototype.initialize = function (mulwapp) {
   this.addGuidProperty();
-  this.setupConstructorInterceptors(this.getConstructors());
+  this.setupConstructorInterceptors(mulwapp, this.getConstructors());
 }
 
 /**
@@ -106,9 +106,10 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
  * @param {Mulwapp} mulwapp - A reference to a Mulwapp object
  * @param {Array} constructors - A list of constructors to intercept
  */
-var threeadaptercreatecounter = 0; // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
-var threeadaptercreatenames = ['scene', 'renderer', 'boxgeom', 'lambmat', 'cube', 'camera', 'light']; // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
-ThreeAdapter.prototype.setupConstructorInterceptors = function (constructors) {
+// var threeadaptercreatecounter = 0; // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
+// var threeadaptercreatenames = ['scene', 'renderer', 'boxgeom', 'lambmat', 'cube', 'camera', 'light']; // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
+var nextIncrementalGuid = 0;
+ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constructors) {
   var _this = this;
 
   constructors.forEach(function (name) {
@@ -122,11 +123,16 @@ ThreeAdapter.prototype.setupConstructorInterceptors = function (constructors) {
       // Decorate constructor
       if (!this._mulwapp_remote_create) {
 
-        // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
-        if (threeadaptercreatecounter < threeadaptercreatenames.length) {
-          this.mulwapp_guid = threeadaptercreatenames[threeadaptercreatecounter];
-          threeadaptercreatecounter++;
+        if (mulwapp.applicationInitializationOngoing) {
+          this.mulwapp_guid = 'guid' + nextIncrementalGuid;
+          nextIncrementalGuid++;
         }
+
+        // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
+        // if (threeadaptercreatecounter < threeadaptercreatenames.length) {
+        //   this.mulwapp_guid = threeadaptercreatenames[threeadaptercreatecounter];
+        //   threeadaptercreatecounter++;
+        // }
 
         var spec = _this.generateCreateSpec(name, this.mulwapp_guid, arguments);
         this.mulwapp_create_spec = spec;
@@ -358,7 +364,7 @@ ThreeAdapter.prototype.getConstructors = function () {
     // "Float32Attribute",
     // "Float64Attribute",
     // "DynamicBufferAttribute",
-    // "BufferGeometry",
+    "BufferGeometry",
     // "Geometry",
     // "GeometryIdCount",
     // "Camera",
@@ -430,7 +436,7 @@ ThreeAdapter.prototype.getConstructors = function () {
     // "UniformsUtils",
     // "UniformsLib",
     // "ShaderLib",
-    "WebGLRenderer",
+    // "WebGLRenderer",
     // "WebGLRenderTarget",
     // "WebGLRenderTargetCube",
     // "WebGLExtensions",
