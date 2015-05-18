@@ -29,14 +29,12 @@ if (!Array.prototype.find) {
  * A Library Adapter Layer for ThreeJS 
  */
 
-var THREE = require('three');
-
 /**
  * Constructor for the ThreeJS Library Adapter Layer.
  * @param {object} config - A configuration object. Must contain a 'shareConf' 
  *   function.
  */
-module.exports = ThreeAdapter = function (config) {
+ThreeAdapter = function (config) {
   this.config = config;
   this.allLocalObjects = {};
 }
@@ -44,8 +42,31 @@ module.exports = ThreeAdapter = function (config) {
 /**
  *
  */
-ThreeAdapter.prototype.initialize = function (mulwapp) {
-  this.setupConstructorInterceptors(mulwapp, this.config.constructors);
+ThreeAdapter.prototype.initialize = function () {
+  this.addGuidProperty();
+  this.setupConstructorInterceptors(this.config.constructors);
+}
+
+/**
+ *
+ */
+ThreeAdapter.prototype.addGuidProperty = function () {
+  if ('mulwapp_guid' in THREE.Object3D.prototype) {
+    return;
+  }
+  var propobj = {
+    get: function () {
+      if (this._mulwapp_guid == undefined) {
+        this._mulwapp_guid = '' + Math.random();
+      }
+      return this._mulwapp_guid;
+    },
+    set: function (x) { this._mulwapp_guid = x; } 
+  };
+
+  Object.defineProperty(THREE.Object3D.prototype, 'mulwapp_guid', propobj);
+  Object.defineProperty(THREE.Geometry.prototype, 'mulwapp_guid', propobj);
+  Object.defineProperty(THREE.Material.prototype, 'mulwapp_guid', propobj);
 }
 
 /**
@@ -58,6 +79,7 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
 
   (function aux (node, path) {
     var docNode = {
+      'create_spec': node.mulwapp_create_spec,
       'props': {}, 
       'children': {}
     };
@@ -93,7 +115,7 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
  * @param {Mulwapp} mulwapp - A reference to a Mulwapp object
  * @param {Array} constructors - A list of constructors to intercept
  */
-ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constructors) {
+ThreeAdapter.prototype.setupConstructorInterceptors = function (constructors) {
   var _this = this;
 
   constructors.forEach(function (name) {
@@ -105,9 +127,9 @@ ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constru
     // Override with your own, then call the original
     THREE[name] = function () {
       // Decorate constructor
-      if (! (this.mulwapp_guid in _this.all_local_objects)) {
+      if (!this._mulwapp_remote_create) {
         var spec = _this.generateCreateSpec(name, this.mulwapp_guid, arguments);
-        mulwapp.addToCreateList(spec);
+        this.mulwapp_create_spec = spec;
       }
 
       // Call original constructor
@@ -122,22 +144,24 @@ ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constru
 /**
  * Generate the specification that is used by remote peers to replay
  * object creation.
- * @param {string} name The name of the object type
- * @param {string} id The mulwapp_guid of the object
- * @param {Array} argum The arguments given to the local constructor
+ * @param {string} name - The name of the object type
+ * @param {string} guid - The mulwapp_guid of the object
+ * @param {Array} argum - The arguments given to the local constructor
  */
-ThreeAdapter.prototype.generateCreateSpec = function (name, id, argum) {
+ThreeAdapter.prototype.generateCreateSpec = function (name, guid, argum) {
   var args = [];
 
-  argum.forEach(function (arg, idx) {
+  // Argum is not an Array, but function parameters which is 'array like'
+  for (var i = 0; i < argum.length; i++) {
+    var arg = argum[i];
     if ((typeof arg) == 'object' && arg.mulwapp_guid != undefined) {
       args.push({primitive: false, value: arg.mulwapp_guid});
     } else {
       args.push({primitive: true, value: arg});
     }
-  });
+  }
 
-  return {type: name, mulwapp_guid: id, args: args}
+  return {type: name, mulwapp_guid: guid, args: args}
 }
 
 /**
@@ -147,6 +171,7 @@ ThreeAdapter.prototype.generateCreateSpec = function (name, id, argum) {
  */
 ThreeAdapter.prototype.constructorReplayer = function (spec) {
   function F(args) {
+    this._mulwapp_remote_create = true;
     return THREE[spec.type].apply(this, args);
   }
   F.prototype = THREE[spec.type].prototype;
@@ -188,12 +213,11 @@ ThreeAdapter.prototype.modelUpdater = function (op) {
     node.remove(child);
   }
   else if (op.type == 'insert object') {
-    var createSpec = val.create_spec;
+    var createSpec = op.val.create_spec;
     this.constructorReplayer(createSpec);
   }
   else if (op.type == 'delete object') {
-    delete this.allLocalObjects[guid];
-    delete node;
+    delete this.allLocalObjects[op.guid];
   }
 }
 
@@ -201,5 +225,5 @@ ThreeAdapter.prototype.modelUpdater = function (op) {
  *
  */
 ThreeAdapter.prototype.lookupNodeByGuid = function (guid) {
-  return this.allLocalObjects(guid);
+  return this.allLocalObjects[guid];
 }

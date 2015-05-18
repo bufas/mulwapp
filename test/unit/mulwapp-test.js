@@ -1,5 +1,3 @@
-var Mulwapp = require('../../src/mulwapp');
-var buster = require('buster');
 var assert = buster.referee.assert;
 var refute = buster.referee.refute;
 

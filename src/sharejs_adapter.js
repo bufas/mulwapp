@@ -2,41 +2,37 @@
  * ShareJS Adapter for Mulwapp
  */
 
-var sharejs = require('share').client;
-
 /**
  * @param {Mulwapp} mulwapp - A reference to a Mulwapp object
  * @param {object} config - A configuration object
  */
-module.exports = SharejsAdapter = function (mulwapp, config) {
-  var _this = this
+SharejsAdapter = function (config) {
   this.docName = config.documentName;
-
-  // Open a connection to the server
-  sharejs.open(this.docName, 'json', function (_, doc) {
-    // Bind Mulwapp handler to remote operation events
-    doc.on('remoteop', function (ops) {
-      var mulwappOps = _this.convertOperations(ops);
-      mulwapp.handleRemoteOperations(mulwappOps);
-    });
-
-    if (doc.get() == null) {
-      // Initialize document (i.e. I'm the first client)
-      doc.set({});
-    }
-  });
 }
 
-SharejsAdapter.prototype.getDoc = function () {
+/**
+ *
+ */
+SharejsAdapter.prototype.initialize = function (mulwapp) {
+  var _this = this;
   return new Promise(function (resolve, reject) {
-    sharejs.open(this.docName, 'json', function (err, doc) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(doc);
+    // Open a connection to the server
+    sharejs.open(_this.docName, 'json', function (_, doc) {
+      // Bind Mulwapp handler to remote operation events
+      doc.on('remoteop', function (ops) {
+        var mulwappOps = _this.convertOperations(ops);
+        mulwapp.handleRemoteOperations(mulwappOps);
+      });
+
+      if (doc.get() == null) {
+        // Initialize document (i.e. I'm the first client)
+        doc.set({});
       }
+
+      _this.doc = doc;
+      resolve(doc);
     });
-  })
+  });
 }
 
 /**
@@ -44,18 +40,18 @@ SharejsAdapter.prototype.getDoc = function () {
  * @param {Array} operations - A list of operations
  */
 SharejsAdapter.prototype.applyOperations = function (operations) {
-  var _this = this;
-  this.getDoc.then(function (doc) {
-    operations.forEach(function (op) {
-      _this.applyOperation(op, doc);
-    });
-  });
+  if (!this.doc) throw 'applyOperations called before doc is ready';
+
+  operations.forEach(function (op) {
+    this.applyOperation(op, this.doc);
+  }, this);
 }
 
 /**
  *
  */
 SharejsAdapter.prototype.applyOperation = function (op, doc) {
+  console.log(op);
   if (op.type == 'update prop') {
     doc.at([op.guid, 'props', op.key]).set(op.val);
   }
@@ -66,21 +62,13 @@ SharejsAdapter.prototype.applyOperation = function (op, doc) {
     doc.at([op.guid, 'children', op.key]).set();
   }
   else if (op.type == 'insert object') {
-    doc.at([op.guid, op.key]).set(op.val);
+    doc.at([op.guid]).set(op.val);
   }
   else if (op.type == 'delete object') {
-    doc.at([op.guid, op.key]).set();
+    doc.at([op.guid]).set();
   }
 }
 
-/**
- * Adds a create specification to the create list in the synchronized document.
- * @param {object} createSpecification - The createSpecification
- */
-SharejsAdapter.prototype.addToCreateList = function (createSpecification) {
-  var mulwapp_guid = createSpecification.mulwapp_guid;
-  this.doc.at(['create', mulwapp_guid]).set(createSpecification);
-}
 /**
  * Convert ShareJS operations to the standard Mulwapp format
  * An operation has four properties
@@ -127,3 +115,7 @@ SharejsAdapter.prototype.convertOperations = function (operations) {
   return ops;
 }
 
+SharejsAdapter.prototype.getSnapshot = function () {
+  if (!this.doc) throw 'getSnapshot called before doc is ready';
+  return this.doc.get();
+}

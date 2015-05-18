@@ -1,0 +1,23 @@
+{
+  "name": "3dchess",
+  "version": "0.0.0",
+  "authors": [
+    "Mathias Bak <bufas7@gmail.com>"
+  ],
+  "description": "3D chess with ThreeJS",
+  "main": "index.html",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "threejs": "*",
+    "jquery": "~2.1.3",
+    "stats.js": "*"
+  }
+}

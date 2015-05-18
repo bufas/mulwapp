@@ -5,13 +5,11 @@
   "main": "src/mulwapp.js",
 
   "dependencies": {
-    "three": "^0.71.0",
     "share": "^0.6.3"
   },
 
   "devDependencies": {
-    "buster": "^0.7.18",
-    "proxyquire": "^1.4.0"
+    "buster": "^0.7.18"
   },
 
   "scripts": {

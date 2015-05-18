@@ -19,10 +19,17 @@
  * @param {object} config - A configuration object. Must contain the two props 
  *   'sync' and 'lal'.
  */
-module.exports = Mulwapp = function (Lal, SyncAdapter, config) {
-  this.lal = new Lal(this, config.lal);
-  this.syncAdapter = new SyncAdapter(this, config.sync);
-  this.lal.initialize(this);
+Mulwapp = function (Lal, SyncAdapter, config) {
+  var _this = this;
+
+  this.lal = new Lal(config.lal);
+  this.lal.initialize();
+
+  this.syncIsReady = false;
+  this.syncAdapter = new SyncAdapter(config.sync);
+  this.syncAdapter.initialize(this).then(function (doc) {
+    _this.syncIsReady = true;
+  });
 }
 
 /**
@@ -30,8 +37,10 @@ module.exports = Mulwapp = function (Lal, SyncAdapter, config) {
  * @param {object} root - A reference to the root node of the scene
  */
 Mulwapp.prototype.animationFrameFn = function (root) {
+  if (!this.syncIsReady) return;
   var diffModel = this.lal.calculateDiffModel(root);
-  var diff = this.diff(diffModel, this.getSynchronizedModel(), ['scene']);
+  var syncModel = this.syncAdapter.getSnapshot();
+  var diff = this.diff(diffModel, syncModel, root.mulwapp_guid);
   this.syncAdapter.applyOperations(diff);
 }
 
@@ -158,12 +167,4 @@ Mulwapp.prototype.diff = function (diffModel, syncModel, rootGuid) {
  */
 Mulwapp.prototype.handleRemoteOperations = function (operations) {
   operations.forEach(this.lal.updateModel);
-}
-
-/**
- * Add an object create specification to the synchronized document.
- * @param {object} createSpecification - The createSpecification
- */
-Mulwapp.prototype.addToCreateList = function (createSpecification) {
-  this.syncAdapter.addToCreateList(createSpecification);
 }

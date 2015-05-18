@@ -1,10 +1,11 @@
 var config = module.exports;
 
 config["My tests"] = {
-  environment: "node",
+  environment: "browser",
   rootPath: "../",
   sources: [
-    'adapters/threejs_adapter.js',
+    'src/bower_components/threejs/build/three.min.js',
+    'src/threejs_adapter.js',
     'src/sharejs_adapter.js',
     'src/mulwapp.js'
   ],
