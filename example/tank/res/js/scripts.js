@@ -42,7 +42,7 @@ var sceneHeight = 500;
 var scene = new THREE.Scene();
 var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(sceneWidth, sceneHeight);
-renderer.setClearColor(0xdddddd, 1);
+renderer.setClearColor(0xffffff, 1);
 
 var geo_tread1 = new THREE.BoxGeometry(1, .8, 6.5);
 var geo_tread2 = new THREE.BoxGeometry(1, .8, 6.5);
@@ -50,10 +50,10 @@ var geo_base   = new THREE.BoxGeometry(5, 2, 7);
 var geo_turret = new THREE.BoxGeometry(3, 1.5, 3.5);
 var geo_cannon = new THREE.BoxGeometry(.6, .5, 6);
 
-var mat_treads = new THREE.MeshLambertMaterial({color: '#ffffaa'});
-var mat_base   = new THREE.MeshLambertMaterial({color: '#aaaaff'});
-var mat_turret = new THREE.MeshLambertMaterial({color: '#ffaaaa'});
-var mat_cannon = new THREE.MeshLambertMaterial({color: '#aaffaa'});
+var mat_treads = new THREE.MeshLambertMaterial({color: '#ffff55'});
+var mat_base   = new THREE.MeshLambertMaterial({color: '#5555ff'});
+var mat_turret = new THREE.MeshLambertMaterial({color: '#ff5555'});
+var mat_cannon = new THREE.MeshLambertMaterial({color: '#55ff55'});
 
 var tread1 = new THREE.Mesh(geo_tread1, mat_treads);
 var tread2 = new THREE.Mesh(geo_tread2, mat_treads);
@@ -91,8 +91,9 @@ camera.lookAt(new THREE.Vector3(0, 0, 0));
 scene.add(camera);
 
 // Light
-var light = new THREE.PointLight(0xffffff);
-camera.add(light);
+var light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(4, 8, 3);
+scene.add(light);
 
 document.body.appendChild(renderer.domElement);
 
