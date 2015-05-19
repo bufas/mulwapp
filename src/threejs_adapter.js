@@ -435,7 +435,7 @@ ThreeAdapter.prototype.getConstructors = function () {
     // "CompressedTexture",
     // "DataTexture",
     // "VideoTexture",
-    // "Group",
+    "Group",
     // "PointCloud",
     // "ParticleSystem",
     // "Line",
