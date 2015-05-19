@@ -1,0 +1,19 @@
+{
+  "name": "tank-example",
+  "version": "1.0.0",
+  "homepage": "https://github.com/bufas/mulwapp",
+  "authors": [
+    "garbagemule"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "threex.keyboardstate": "*"
+  }
+}
