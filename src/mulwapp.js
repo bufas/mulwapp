@@ -60,19 +60,6 @@ Mulwapp.prototype.animationFrameFn = function (root) {
       );
 
       this.handleRemoteOperations(reverseDiff);
-
-      // // New objects have been inserted into the graph, update their properties
-      // var reverseDiffProps = this.diff(
-      //   syncModel, 
-      //   this.lal.calculateDiffModel(root), 
-      //   root.mulwapp_guid
-      // );
-
-      // diffUpdateProperty = reverseDiffProps.filter(function (op) {
-      //   return op.type == 'update prop';
-      // });
-
-      // this.handleRemoteOperations(diffUpdateProperty);
     }
 
     this.firstAnimationFrameRun = false;
@@ -99,7 +86,7 @@ var keyUnion = function (obj1, obj2) {
   var keys1 = Object.keys(obj1);
   var keys2 = Object.keys(obj2);
 
-  var allKeysObj = {}
+  var allKeysObj = {};
   keys1.concat(keys2).forEach(function (key) {
     allKeysObj[key] = true;
   });
@@ -221,6 +208,9 @@ Mulwapp.prototype.handleRemoteOperations = function (operations) {
     }
     return ranks[op1.type] - ranks[op2.type];
   }
+
+  // TODO sorting is not enough, they must be topologically sorted based on
+  // the dependency graph
 
   operations.sort(opComparator).forEach(function (op) {
     this.lal.modelUpdater(op);

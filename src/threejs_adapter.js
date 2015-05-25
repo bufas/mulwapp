@@ -221,6 +221,11 @@ ThreeAdapter.prototype.modelUpdater = function (op) {
     Object.keys(op.val.props).forEach(function (prop) {
       setProp(node, prop, op.val.props[prop]);
     });
+    Object.keys(op.val.children).forEach(function (childGuid) {
+      debugger;
+      var child = this.lookupNodeByGuid(childGuid);
+      node.add(child);
+    }, this);
   }
   else if (op.type == 'delete object') {
     delete this.allLocalObjects[op.guid];
