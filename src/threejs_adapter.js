@@ -44,6 +44,17 @@ ThreeAdapter.prototype.addGuidProperty = function () {
 }
 
 /**
+ * Fetches dependencies out of the create spec and returns them as a list
+ * @param  {object} a create spec
+ * @return {Array} a list of object dependencies
+ */
+ThreeAdapter.prototype.getDependencies = function (createSpec) {
+  var filter = function (arg) { return !arg.primitive; }
+  var map = function (arg) { return arg.value; }
+  return createSpec.args.filter(filter).map(map);
+}
+
+/**
  * Calculates the diff model
  * @param {THREE.Scene} root - The scene graph root
  * @returns The diff model of the current scene graph
@@ -53,7 +64,8 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
 
   (function aux (node, path, parentNode) {
     var docNode = {
-      'create_spec': node.mulwapp_create_spec,
+      'extra': node.mulwapp_create_spec,
+      'dependencies': this.getDependencies(node.mulwapp_create_spec),
       'props': {}, 
       'children': {}
     };
@@ -89,10 +101,8 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
     }
 
     // Recurse on dependencies from create spec
-    node.mulwapp_create_spec.args.forEach(function (arg) {
-      if (!arg.primitive) {
-        aux.call(this, this.lookupNodeByGuid(arg.value), undefined, undefined);
-      }
+    docNode.dependencies.forEach(function (dep) {
+      aux.call(this, this.lookupNodeByGuid(dep), undefined, undefined);
     }, this)
 
     doc[node.mulwapp_guid] = docNode;
@@ -217,15 +227,7 @@ ThreeAdapter.prototype.modelUpdater = function (op) {
     node.remove(child);
   }
   else if (op.type == 'insert object') {
-    var node = this.constructorReplayer(op.val.create_spec);
-    Object.keys(op.val.props).forEach(function (prop) {
-      setProp(node, prop, op.val.props[prop]);
-    });
-    Object.keys(op.val.children).forEach(function (childGuid) {
-      debugger;
-      var child = this.lookupNodeByGuid(childGuid);
-      node.add(child);
-    }, this);
+    this.constructorReplayer(op.val.extra);
   }
   else if (op.type == 'delete object') {
     delete this.allLocalObjects[op.guid];

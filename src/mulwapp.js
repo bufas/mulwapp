@@ -209,8 +209,33 @@ Mulwapp.prototype.handleRemoteOperations = function (operations) {
     return ranks[op1.type] - ranks[op2.type];
   }
 
-  // TODO sorting is not enough, they must be topologically sorted based on
-  // the dependency graph
+  var insertObjectFilter = function (op) {
+    return op.type == 'insert object';
+  }
+
+  // Add extra operation for object insertions, so properties are updated and
+  // children added
+  operations.filter(insertObjectFilter).forEach(function (op) {
+
+    Object.keys(op.val.props).forEach(function (prop) {
+      operations.push({
+        type : 'update prop', 
+        guid : op.guid,
+        key  : prop,
+        val  : op.val.props[prop]
+      });
+    });
+
+    Object.keys(op.val.children).forEach(function (childGuid) {
+      operations.push({
+        type: 'insert child', 
+        guid: op.val.children[childGuid],
+        key: op.guid,
+        val: undefined
+      });
+    });
+
+  });
 
   operations.sort(opComparator).forEach(function (op) {
     this.lal.modelUpdater(op);
