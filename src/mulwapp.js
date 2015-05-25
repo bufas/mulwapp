@@ -229,8 +229,8 @@ Mulwapp.prototype.handleRemoteOperations = function (operations) {
     Object.keys(op.val.children).forEach(function (childGuid) {
       operations.push({
         type: 'insert child', 
-        guid: op.val.children[childGuid],
-        key: op.guid,
+        guid: op.guid,
+        key: childGuid,
         val: undefined
       });
     });
