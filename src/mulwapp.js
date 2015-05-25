@@ -16,7 +16,7 @@
  * @param {Function} Lal - A reference to the LAL constructor
  * @param {Function} SyncAdapter - A reference to a synchronization adapter 
  *   constructor
- * @param {object} config - A configuration object. Must contain the two props 
+ * @param {object} config - A configuration object. Must contain the two props
  *   'sync' and 'lal'.
  */
 Mulwapp = function (Lal, SyncAdapter, config) {
@@ -31,6 +31,8 @@ Mulwapp = function (Lal, SyncAdapter, config) {
   this.syncAdapter.initialize(this).then(function (doc) {
     _this.syncIsReady = true;
   });
+
+  this.firstAnimationFrameRun = true;
 }
 
 /**
@@ -40,17 +42,51 @@ Mulwapp = function (Lal, SyncAdapter, config) {
 Mulwapp.prototype.animationFrameFn = function (root) {
   if (!this.syncIsReady) return;
 
-  // Check if the app has just been initialized
-  if (this.applicationInitializationOngoing) {
-    // TODO update local model from remote snapshot
-    this.applicationInitializationOngoing = false;
-    return;
-  }
-
-  var diffModel = this.lal.calculateDiffModel(root);
   var syncModel = this.syncAdapter.getSnapshot();
-  var diff = this.diff(diffModel, syncModel, root.mulwapp_guid);
-  this.syncAdapter.applyOperations(diff);
+
+  // Check if the app has just been initialized
+  if (this.firstAnimationFrameRun) {
+    if (Object.keys(syncModel).length > 0) {
+      if (this.applicationInitializationOngoing) {
+        this.setInitialized(root);
+      }
+
+      // Figure out which objects has been created or deleted by by remote 
+      // clients.
+      var reverseDiff = this.diff(
+        syncModel, 
+        this.localInitModel, 
+        root.mulwapp_guid
+      );
+
+      this.handleRemoteOperations(reverseDiff);
+
+      // // New objects have been inserted into the graph, update their properties
+      // var reverseDiffProps = this.diff(
+      //   syncModel, 
+      //   this.lal.calculateDiffModel(root), 
+      //   root.mulwapp_guid
+      // );
+
+      // diffUpdateProperty = reverseDiffProps.filter(function (op) {
+      //   return op.type == 'update prop';
+      // });
+
+      // this.handleRemoteOperations(diffUpdateProperty);
+    }
+
+    this.firstAnimationFrameRun = false;
+  }
+  else {
+    var diffModel = this.lal.calculateDiffModel(root);
+    var diff = this.diff(diffModel, syncModel, root.mulwapp_guid);
+    this.syncAdapter.applyOperations(diff);
+  }
+}
+
+Mulwapp.prototype.setInitialized = function (root) {
+  this.localInitModel = this.lal.calculateDiffModel(root);
+  this.applicationInitializationOngoing = false;
 }
 
 /**
@@ -175,7 +211,18 @@ Mulwapp.prototype.diff = function (diffModel, syncModel, rootGuid) {
  * @param {Array} operations - An array of operations
  */
 Mulwapp.prototype.handleRemoteOperations = function (operations) {
-  operations.forEach(function (op) {
+  var opComparator = function (op1, op2) {
+    var ranks = {
+      'insert object' : 1,
+      'insert child'  : 2,
+      'update prop'   : 3,
+      'delete object' : 4,
+      'delete object' : 5
+    }
+    return ranks[op1.type] - ranks[op2.type];
+  }
+
+  operations.sort(opComparator).forEach(function (op) {
     this.lal.modelUpdater(op);
   }, this);
 }

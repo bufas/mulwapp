@@ -28,7 +28,7 @@ var mulwapp = new Mulwapp(
       },
     },
     sync: {
-      documentName: 'abetank2',
+      documentName: window.location.hash || 'defaultdoc',
     }
   }
 );
@@ -43,6 +43,8 @@ var scene = new THREE.Scene();
 var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(sceneWidth, sceneHeight);
 renderer.setClearColor(0xffffff, 1);
+
+mulwapp.setInitialized(scene);
 
 var geo_tread1 = new THREE.BoxGeometry(1, .8, 6.5);
 var geo_tread2 = new THREE.BoxGeometry(1, .8, 6.5);

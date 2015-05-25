@@ -104,7 +104,7 @@ SharejsAdapter.prototype.convertOperations = function (operations) {
     } else if (op.p.length == 3 && op.p[1] == 'children') {
       o.key = op.p[2];
       o.type += ' child';
-    } else if (op.p.length == 2) {
+    } else if (op.p.length == 1) {
       if (o.type == 'insert') o.val = op.oi;
       o.type += ' object';
     }

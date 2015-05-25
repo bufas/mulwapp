@@ -10,6 +10,7 @@
 ThreeAdapter = function (config) {
   this.config = config;
   this.allLocalObjects = {};
+  this.nextIncrementalGuid = 0;
 }
 
 /**
@@ -106,9 +107,6 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
  * @param {Mulwapp} mulwapp - A reference to a Mulwapp object
  * @param {Array} constructors - A list of constructors to intercept
  */
-// var threeadaptercreatecounter = 0; // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
-// var threeadaptercreatenames = ['scene', 'renderer', 'boxgeom', 'lambmat', 'cube', 'camera', 'light']; // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
-var nextIncrementalGuid = 0;
 ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constructors) {
   var _this = this;
 
@@ -124,15 +122,9 @@ ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constru
       if (!this._mulwapp_remote_create) {
 
         if (mulwapp.applicationInitializationOngoing) {
-          this.mulwapp_guid = 'guid' + nextIncrementalGuid;
-          nextIncrementalGuid++;
+          this.mulwapp_guid = 'guid' + _this.nextIncrementalGuid;
+          _this.nextIncrementalGuid++;
         }
-
-        // TODO ONLY FOR TESTING PURPOSES REMOVE AFTER
-        // if (threeadaptercreatecounter < threeadaptercreatenames.length) {
-        //   this.mulwapp_guid = threeadaptercreatenames[threeadaptercreatecounter];
-        //   threeadaptercreatecounter++;
-        // }
 
         var spec = _this.generateCreateSpec(name, this.mulwapp_guid, arguments);
         this.mulwapp_create_spec = spec;
@@ -179,6 +171,7 @@ ThreeAdapter.prototype.generateCreateSpec = function (name, guid, argum) {
 ThreeAdapter.prototype.constructorReplayer = function (spec) {
   function F(args) {
     this._mulwapp_remote_create = true;
+    this.mulwapp_create_spec = spec;
     return THREE[spec.type].apply(this, args);
   }
   F.prototype = THREE[spec.type].prototype;
@@ -202,14 +195,18 @@ ThreeAdapter.prototype.constructorReplayer = function (spec) {
  *
  */
 ThreeAdapter.prototype.modelUpdater = function (op) {
+  var setProp = function (node, prop, val) {
+    var propPath = prop.split('.');
+    propPath.slice(0, -1).forEach(function (step) {
+      node = node[step];
+    });
+    node[propPath[propPath.length - 1]] = val;
+  }
+
   var node = this.lookupNodeByGuid(op.guid);
 
   if (op.type == 'update prop') {
-    var keyPath = op.key.split('.');
-    keyPath.slice(0, -1).forEach(function (step) {
-      node = node[step];
-    });
-    node[keyPath[keyPath.length - 1]] = op.val;
+    setProp(node, op.key, op.val);
   }
   else if (op.type == 'insert child') {
     var child = this.lookupNodeByGuid(op.key);
@@ -220,8 +217,10 @@ ThreeAdapter.prototype.modelUpdater = function (op) {
     node.remove(child);
   }
   else if (op.type == 'insert object') {
-    var createSpec = op.val.create_spec;
-    this.constructorReplayer(createSpec);
+    var node = this.constructorReplayer(op.val.create_spec);
+    Object.keys(op.val.props).forEach(function (prop) {
+      setProp(node, prop, op.val.props[prop]);
+    });
   }
   else if (op.type == 'delete object') {
     delete this.allLocalObjects[op.guid];
