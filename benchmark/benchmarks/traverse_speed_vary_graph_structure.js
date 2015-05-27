@@ -17,21 +17,21 @@ var traverseSpeedVaryGraphStructure = function () {
 
   // Bench matrix
   var nodes = [
-    10, 
-    30, 
-    100, 
-    200, 
-    300, 
-    400, 
-    500, 
-    600, 
-    700, 
-    800, 
+    1000,
     900, 
-    1000
+    800, 
+    700, 
+    600, 
+    500, 
+    400, 
+    300, 
+    200, 
+    100, 
+    30, 
+    10
   ];
-  var iterations = [
-    10000
+  var time = [
+    1000
   ];
   var configurations = {
     'flat'  : graphConfigurations.flat(),
@@ -40,27 +40,29 @@ var traverseSpeedVaryGraphStructure = function () {
     '4ary'  : graphConfigurations.nary(4)
   };
 
-  // Instantiate Library Adapter
+  // Instantiate Library Adapter and zip file
   var lalConfig = { shareConf: shareConfigurations.default };
   var lal = new ThreeAdapter(lalConfig);
+  var zip = new JSZip();
 
   // Benchmark
-  var data = [['#', 'conf', 'time', 'n', 'iter']];
   Object.keys(configurations).forEach(function (conf) {
-    iterations.forEach(function (iter) {
+    var data = [['#', 'iter', 'n', 'time']];
+
+    time.forEach(function (t) {
       nodes.forEach(function (n) {
-        var scene = new SceneGraph(configurations[conf](nodes), factories.default);
-        var time  = timeCalcDiffModel(lal, scene, iter);
-        data.push([conf, time, n, iter]);
+        var scene = new SceneGraph(configurations[conf](n), factories.default);
+        var iter  = timeCalcDiffModel(lal, scene, t);
+        data.push([iter, n, t]);
       });
     });
+
+    var dataString = data.map(function (row) { return row.join(' '); }).join('\n');
+    zip.file('data/traverse_speed_vary_graph_structure/'+conf+'.dat', dataString);
   });
 
-  // Write to file
-  var dataString = data.map(function (row) { return row.join(' '); }).join('\n');
-  var zip = new JSZip();
-  zip.file('data/traverse_speed_vary_graph_structure/data.txt', dataString);
-  location.href="data:application/zip;base64,"+zip.generate({type:"base64"});
+  // Download the file
+  location.href="data:application/zip;base64,"+zip.generate();
 
 }
 
@@ -71,13 +73,24 @@ var traverseSpeedVaryGraphStructure = function () {
  * @param {number} iterations - the number of times to calculate the diff model
  * @return {number} The number of miliseconds to run the test
  */
-var timeCalcDiffModel = function (lal, scene, iterations) {
+var timeCalcDiffModel = function (lal, scene, ms) {
   var start = performance.now();
-  for (var i = 0; i < iterations; i++) {
-    lal.calculateDiffModel(scene.root);
+  var end;
+  var iterations = 0;
+  var dm = {}; var cnt = 0; // Force side effects
+  while (true) {
+    dm = lal.calculateDiffModel(scene.root);
+    iterations++;
+
+    // Force side effects
+    if (dm) cnt++;
+
+    end = performance.now();
+    if (end - start > ms) break;
   }
-  var end = performance.now();
-  return end - start;
+
+  console.log(cnt);
+  return iterations / ((end - start) / 1000);
 }
 
 $(function () {

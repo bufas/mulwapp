@@ -1,0 +1,3 @@
+#!/bin/bash
+
+gnuplot data/traverse_speed_vary_graph_structure/plot.txt
