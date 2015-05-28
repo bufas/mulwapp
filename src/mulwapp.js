@@ -203,7 +203,7 @@ Mulwapp.prototype.handleRemoteOperations = function (operations) {
       'insert object' : 1,
       'insert child'  : 2,
       'update prop'   : 3,
-      'delete object' : 4,
+      'delete child'  : 4,
       'delete object' : 5
     }
     return ranks[op1.type] - ranks[op2.type];
