@@ -2,10 +2,46 @@
 <html>
   <head>
     <title>Mulwapp benchmark</title>
+    <link rel="stylesheet" type="text/css" href="bower_components/skeleton-css/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="bower_components/skeleton-css/css/skeleton.css">
+    <style>
+      body {
+        margin-top: 20px;
+      }
+      .gray {
+        color: #ccc;
+      }
+      .benchmark-buttons button {
+        display: block;
+        width: 100%;
+      }
+      .inprogress-row {
+        height: 40px;
+        margin: 10px 0 10px 0;
+        vertical-align: middle;
+      }
+      .inprogress {
+        text-align: center;
+      }
+      .hide {
+        display: none;
+      }
+    </style>
   </head>
   <body>
-    <div class="benchmark-buttons"></div>
-    <div class="zip-contents"></div>
+    <div class="container">
+      <div class="row">
+        <div class="benchmark-buttons"></div>
+      </div>
+      <div class="row inprogress-row">
+        <div class="inprogress hide">
+          Benchmark in progress
+        </div>
+      </div>
+      <div class="row">
+        <div class="zip-contents"></div>
+      </div>
+    </div>
 
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/threejs/build/three.min.js"></script>

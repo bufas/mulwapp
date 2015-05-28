@@ -16,6 +16,7 @@
   "dependencies": {
     "jszip": "Stuk/jszip#~2.5.0",
     "threejs": "*",
-    "jquery": "~2.1.4"
+    "jquery": "~2.1.4",
+    "skeleton-css": "~2.0.4"
   }
 }

@@ -10,32 +10,35 @@ ZipHandler.prototype.addFile = function (path, content) {
 }
 
 ZipHandler.prototype.drawZipContents = function () {
-  this.zipContents.text(this.zip.file(/.*/).map(function (x) { 
-    return x.name; 
-  }).join('\n'));
+  this.zipContents.html(this.zip.file(/.*/).map(function (x) { 
+    var lastSlash = x.name.lastIndexOf('/');
+    var dir = '<span class="gray">' + x.name.substr(0, lastSlash+1) + '</span>';
+    return dir + x.name.substr(lastSlash+1); 
+  }).join('<br>'));
 }
 
 ZipHandler.prototype.download = function () {
   location.href='data:application/zip;base64,' + this.zip.generate();
 }
 
-
-
-
-
-
 BenchMarker = function () {
   this.benchmarks = {};
-  this.benchtime  = 1000;
+  this.benchtime  = 1;
   this.zipHandler = new ZipHandler();
 }
 
 BenchMarker.prototype.addBench = function (name, benchmark) {
   this.benchmarks[name] = benchmark;
 
+  var _this = this;
   var benchBtn = $('<button type="button">');
   benchBtn.text(name);
-  benchBtn.on('click', this.runBench.bind(this, name));
+  benchBtn.on('click', function () {
+    $('.inprogress').fadeIn('slow', function () {
+      _this.runBench(name);
+      $('.inprogress').fadeOut('slow');
+    });
+  });
   $('.benchmark-buttons').append(benchBtn);
 }
 
@@ -74,6 +77,7 @@ BenchMarker.prototype.timer = function (benchmark, lineInfo, testThis) {
   var start = performance.now();
   var end;
   var iterations = 0;
+
   while (true) {
     benchmark.testCase.call(testThis, lineInfo);
     iterations++;
@@ -94,6 +98,7 @@ $(function () {
   var benchBtn = $('<button type="button">');
   benchBtn.text('Download Zippio Kontos');
   benchBtn.on('click', benchmarker.download.bind(benchmarker));
+  benchBtn.addClass('button-primary');
   $('.benchmark-buttons').append(benchBtn);
 });
 
