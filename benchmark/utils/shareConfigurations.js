@@ -4,7 +4,6 @@ shareConfigurations = {
   default : function (node, path, root) {
     return {
       'watch_props' : [
-        'uuid',
         'visible',
         'position.x',
         'position.y',
@@ -17,7 +16,6 @@ shareConfigurations = {
     return {
       'watch_props' : [
         'matrixWorldNeedsUpdate',
-        'uuid',
         'visible',
         'position.x',
         'position.y',

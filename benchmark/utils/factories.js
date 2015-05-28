@@ -6,6 +6,7 @@ factories = {
      */
     Scene : function () {
       var obj = new THREE.Scene();
+      obj.mulwapp_guid = Math.random();
       obj.mulwapp_create_spec = {args: []}
       return obj
     },
@@ -18,6 +19,7 @@ factories = {
         new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshBasicMaterial({ color: 0xffffff })
       );
+      obj.mulwapp_guid = Math.random();
       obj.mulwapp_create_spec = {args: []}
       return obj
     }
