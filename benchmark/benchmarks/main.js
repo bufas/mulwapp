@@ -23,7 +23,7 @@ ZipHandler.prototype.download = function () {
 
 BenchMarker = function () {
   this.benchmarks = {};
-  this.benchtime  = 1;
+  this.benchtime  = 1000;
   this.zipHandler = new ZipHandler();
 }
 

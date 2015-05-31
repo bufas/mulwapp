@@ -58,8 +58,11 @@ var perfShareLocalChanges = {
   testSetup     : function (args) {
     var applyChanges = function (root, nodes, changeFrac, changesToEachNode) {
       var changes = Math.floor(changeFrac * nodes);
+      var graphNodes = root.children.slice();
       for (var i = 0; i < changes; i++) {
-        var node = root.children[i];
+        var node = graphNodes.shift();
+        node.children.forEach(function (c) { graphNodes.push(c); });
+
         if (changesToEachNode > 0) node.position.x += 1;
         if (changesToEachNode > 1) node.position.y += 1;
         if (changesToEachNode > 2) node.position.z += 1;
