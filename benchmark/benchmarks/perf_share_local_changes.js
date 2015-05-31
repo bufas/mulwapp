@@ -58,7 +58,7 @@ var perfShareLocalChanges = {
   testSetup     : function (args) {
     var applyChanges = function (root, nodes, changeFrac, changesToEachNode) {
       var changes = Math.floor(changeFrac * nodes);
-      var graphNodes = root.children.slice();
+      var graphNodes = [root];
       for (var i = 0; i < changes; i++) {
         var node = graphNodes.shift();
         node.children.forEach(function (c) { graphNodes.push(c); });
@@ -117,6 +117,19 @@ var perfShareLocalChanges = {
             return {changeFrac: c};
           })
         });
+      });
+    });
+
+    nodes = [];
+    for (var i = 10; i <= 1000; i += 30) nodes.push(i);
+
+    changesToEachNode.forEach(function (cten) {
+      testMatrix.push({
+        filename : 'changes' + cten + '.dat',
+        fileData : {changeFrac: 1.00, changesToEachNode: cten},
+        lineData : nodes.map(function (n) { 
+          return {nodes: n};
+        })
       });
     });
 

@@ -1,3 +1,4 @@
 #!/bin/bash
 
 gnuplot data/traverse_speed_vary_graph_structure/plot.txt
+gnuplot data/perf_share_local_changes/plot.txt
