@@ -6,9 +6,6 @@
  *  - Flat, all objects are direct children of the root
  *  - Snake, all objects have a single child except one which has none
  *  - Balanced, a balanced n-ary tree for n = 2 and 4
- *
- * Output
- * 
  */
 
 var traverseSpeedVaryGraphStructure = {

@@ -85,7 +85,7 @@ BenchMarker.prototype.timer = function (benchmark, lineInfo, testThis) {
     if (end - start > this.benchtime) break;
   }
 
-  return iterations / ((end - start) / 1000);
+  return iterations / ((end - start) / this.benchtime);
 }
 
 BenchMarker.prototype.download = function () {

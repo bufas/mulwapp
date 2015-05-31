@@ -67,7 +67,7 @@ var perfShareLocalChanges = {
       }
     }
 
-    var conf = graphConfigurations.flat();
+    var conf = graphConfigurations.nary(4);
     var factory = factories.default
 
     this.scene = new SceneGraph(conf(args.nodes), factory);
