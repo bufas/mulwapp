@@ -22,9 +22,10 @@ ZipHandler.prototype.download = function () {
 }
 
 BenchMarker = function () {
-  this.benchmarks = {};
-  this.benchtime  = 1000;
-  this.zipHandler = new ZipHandler();
+  this.benchmarks         = {};
+  this.benchtime          = 1000;
+  this.zipHandler         = new ZipHandler();
+  this.lastProgressUpdate = -99999999;
 }
 
 BenchMarker.prototype.addBench = function (name, benchmark) {
@@ -48,6 +49,14 @@ BenchMarker.prototype.runBench = function (name) {
 
   benchmark.globalSetup.call(benchThis);
 
+  // Count tests
+  var lineCount = benchmark.testMatrix.reduce(function (acc, x) { 
+    return acc + x.lineData.length; 
+  }, 0);
+
+  var benchStartTime = performance.now();
+  var thisLine = 1;
+
   // Run through all files
   benchmark.testMatrix.forEach(function (fileInfo) {
     var fileData = [benchmark.header];
@@ -62,6 +71,12 @@ BenchMarker.prototype.runBench = function (name) {
       var iter = this.timer(benchmark, lineData, testThis);
       var dataWithTestRes = $.extend({res: iter}, lineData);
       fileData.push(benchmark.makeLine.call(testThis, dataWithTestRes));
+
+      // Print remaining time
+      var timeDiff = performance.now() - benchStartTime;
+      this.printRemainingTime(timeDiff, lineCount, thisLine);
+
+      thisLine++;
     }, this);
 
     // Write the file
@@ -71,6 +86,21 @@ BenchMarker.prototype.runBench = function (name) {
     }).join('\n');
     this.zipHandler.addFile(filePath, dataString);
   }, this);
+}
+
+BenchMarker.prototype.printRemainingTime = function (d, totalLines, linesDone) {
+  var now = performance.now();
+  if (this.lastProgressUpdate > now - 5000) return;
+
+  var linesLeft = totalLines - linesDone;
+  var timeLeft  = Math.floor(((d / linesDone) * linesLeft) / 1000);
+
+  var mins = Math.floor(timeLeft / 60);
+  var secs = ('0' + (timeLeft % 60)).substr(-2);
+  var pct  = Math.floor(linesDone / totalLines * 100);
+  console.log('Time left: ' + mins + ':' + secs + ' ('+pct+'%)');
+
+  this.lastProgressUpdate = now;
 }
 
 BenchMarker.prototype.timer = function (benchmark, lineInfo, testThis) {
