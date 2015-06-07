@@ -2,7 +2,8 @@
  * A Library Adapter Layer for ThreeJS 
  */
 
-CONSTRUCTORS_ALREADY_DECORATED = false;
+CONSTRUCTORS_DECORATED = false;
+GUID_PROPERTY_ADDED = false;
 
 /**
  * Constructor for the ThreeJS Library Adapter Layer.
@@ -27,6 +28,9 @@ ThreeAdapter.prototype.initialize = function (mulwapp) {
  *
  */
 ThreeAdapter.prototype.addGuidProperty = function () {
+  if (GUID_PROPERTY_ADDED) throw 'GUID property has already been added';
+  GUID_PROPERTY_ADDED = true;
+
   if ('mulwapp_guid' in THREE.Object3D.prototype) {
     return;
   }
@@ -119,9 +123,9 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
  * @param {Array} constructors - A list of constructors to intercept
  */
 ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constructors) {
-  if (CONSTRUCTORS_ALREADY_DECORATED) return;
-  CONSTRUCTORS_ALREADY_DECORATED = true;
-
+  if (CONSTRUCTORS_DECORATED) throw 'Constructors have already been decorated';
+  CONSTRUCTORS_DECORATED = true;
+  
   var _this = this;
 
   constructors.forEach(function (name) {

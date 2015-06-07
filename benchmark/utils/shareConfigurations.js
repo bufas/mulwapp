@@ -7,7 +7,10 @@ shareConfigurations = {
         'visible',
         'position.x',
         'position.y',
-        'position.z'
+        'position.z',
+        'rotation.x',
+        'rotation.y',
+        'rotation.z',
       ]
     };
   },

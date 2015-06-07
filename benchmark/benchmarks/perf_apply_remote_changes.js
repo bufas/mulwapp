@@ -10,7 +10,7 @@ var perfApplyRemoteChanges = {
    * A string to prepend to every data file
    * @type {String}
    */
-  header        : ['# iter nodes changeType numberOfChanges'],
+  header        : ['# nodes mean sd ops/sec changeType numberOfChanges'],
 
   /**
    * A setup function that is only run once.
@@ -58,7 +58,11 @@ var perfApplyRemoteChanges = {
    * @return {[type]}
    */
   fileSetup     : function (args) {
+    var conf    = graphConfigurations.flat();
+    var factory = factories.default
 
+    this.mulwapp.lal.allLocalObjects = {};
+    this.scene  = new SceneGraph(conf(args.nodes), factory);
   },
 
   /**
@@ -69,10 +73,6 @@ var perfApplyRemoteChanges = {
       var idx = Math.floor(Math.random() * node.children.length);
       return node.children[idx];
     }
-
-    var conf    = graphConfigurations.flat();
-    var factory = factories.default
-    this.scene  = new SceneGraph(conf(args.nodes), factory);
 
     // Create operations
     this.operations = [];
@@ -127,15 +127,7 @@ var perfApplyRemoteChanges = {
    * is an array of files. Files contains lines, and lines contains data.
    */
   testMatrix    : (function () {
-    var nodes = [
-      10,
-      20,
-      50,
-      100,
-      200,
-      500,
-      1000
-    ];
+    var nodes = [10, 50, 100, 500, 1000];
 
     var operationTypes = [
       'insert object', 
@@ -145,16 +137,8 @@ var perfApplyRemoteChanges = {
       'delete object'
     ];
 
-    var numberOfChanges = [
-      1,
-      2,
-      4,
-      8, 
-      16,
-      32,
-      64,
-      128
-    ];
+    var numberOfChanges = [1];
+    for (var i = 5; i <= 150; i += 5) numberOfChanges.push(i);
 
     var testMatrix = [];
     operationTypes.forEach(function (optyp) {
@@ -174,9 +158,11 @@ var perfApplyRemoteChanges = {
 
   makeLine      : function (args) {
     return [
-      args.res,
       args.nodes,
-      args.operationType,
+      args.stats.mean,
+      args.stats.sd,
+      args.stats.sec,
+      args.operationType.replace(' ', ''),
       args.changes
     ];
   }

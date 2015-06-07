@@ -12,11 +12,12 @@ var traverseSpeedVaryGraphStructure = {
 
   dataDirectory : 'data/traverse_speed_vary_graph_structure/',
 
-  header : ['# iter n'],
+  header : ['# nodes mean sd ops/sec'],
 
   globalSetup : function () {
     var lalConfig = { shareConf: shareConfigurations.default };
     this.lal = new ThreeAdapter(lalConfig);
+    this.lal.initialize({applicationInitializationOngoing: false});
   },
 
   fileSetup     : function (args) {
@@ -24,6 +25,7 @@ var traverseSpeedVaryGraphStructure = {
   },
 
   testSetup : function (args) {
+    this.lal.allLocalObjects = {};
     this.scene = new SceneGraph(args.conf(args.nodes), factories.default);
   },
 
@@ -33,25 +35,14 @@ var traverseSpeedVaryGraphStructure = {
 
   testMatrix : (function () {
     // Bench matrix
-    var nodes = [
-      1000,
-      900, 
-      800, 
-      700, 
-      600, 
-      500, 
-      400, 
-      300, 
-      200, 
-      100, 
-      30, 
-      10
-    ];
+    var nodes = [];
+    for (var i = 10; i <= 1000; i += 30) nodes.push(i);
+
     var configurations = {
-      'flat'  : graphConfigurations.flat(),
-      'snake' : graphConfigurations.nesting(),
-      '2ary'  : graphConfigurations.nary(2),
-      '4ary'  : graphConfigurations.nary(4)
+      'flat'   : graphConfigurations.flat(),
+      'snake'  : graphConfigurations.nary(1),
+      'binary' : graphConfigurations.nary(2),
+      '4ary'   : graphConfigurations.nary(4)
     };
 
     // Benchmark
@@ -70,7 +61,12 @@ var traverseSpeedVaryGraphStructure = {
   })(),
 
   makeLine : function (args) {
-    return [args.res, args.nodes];
+    return [
+      args.nodes,
+      args.stats.mean, 
+      args.stats.sd, 
+      args.stats.sec, 
+    ];
   }
 }
 

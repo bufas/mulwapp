@@ -10,7 +10,7 @@ var perfThreeJSRender = {
    * A string to prepend to every data file
    * @type {String}
    */
-  header        : ['# iter nodes'],
+  header        : ['# nodes mean sd ops/sec'],
 
   /**
    * A setup function that is only run once.
@@ -34,7 +34,8 @@ var perfThreeJSRender = {
    */
   testSetup     : function (args) {
     var conf = graphConfigurations.nary(4);
-    var factory = factories.default
+    var factory = factories.default;
+    
     this.scene = new SceneGraph(conf(args.nodes), factory);
 
     this.camera = new THREE.PerspectiveCamera(85, 500/500, 0.1, 1000);
@@ -67,8 +68,10 @@ var perfThreeJSRender = {
 
   makeLine      : function (args) {
     return [
-      args.res,
-      args.nodes
+      args.nodes,
+      args.stats.mean,
+      args.stats.sd,
+      args.stats.sec,
     ];
   }
 }
