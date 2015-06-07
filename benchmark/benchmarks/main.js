@@ -23,7 +23,7 @@ ZipHandler.prototype.download = function () {
 
 BenchMarker = function () {
   this.benchmarks         = {};
-  this.benchtime          = 1000;
+  this.benchtime          = 100;
   this.zipHandler         = new ZipHandler();
   this.lastProgressUpdate = -99999999;
 }
@@ -68,8 +68,8 @@ BenchMarker.prototype.runBench = function (name) {
       lineData = $.extend(lineData, fileInfo.fileData);
       var testThis = $.extend({}, fileThis);
       benchmark.testSetup.call(testThis, lineData);
-      var iter = this.timer(benchmark, lineData, testThis);
-      var dataWithTestRes = $.extend({res: iter}, lineData);
+      var timerRes = this.timer(benchmark, lineData, testThis);
+      var dataWithTestRes = $.extend({stats: timerRes}, lineData);
       fileData.push(benchmark.makeLine.call(testThis, dataWithTestRes));
 
       // Print remaining time
@@ -104,18 +104,40 @@ BenchMarker.prototype.printRemainingTime = function (d, totalLines, linesDone) {
 }
 
 BenchMarker.prototype.timer = function (benchmark, lineInfo, testThis) {
-  var start = performance.now();
-  var end;
-  var iterations = 0;
+  var testStart = performance.now();
 
+  var tb; 
+  var ta;
+  var ts = [];
   while (true) {
+    var tb = performance.now();
     benchmark.testCase.call(testThis, lineInfo);
-    iterations++;
-    end = performance.now();
-    if (end - start > this.benchtime) break;
+    var ta = performance.now();
+    ts.push(ta - tb);
+    if (performance.now() - testStart > this.benchtime && ts.length > 50) {
+      break;
+    }
   }
 
-  return iterations / ((end - start) / this.benchtime);
+  ts.sort();
+  ts.shift();
+  ts.shift();
+  ts.pop();
+  ts.pop();
+  var mean = ts.reduce(function (acc, t) { return acc + t; }) / ts.length;
+  var variance = ts.reduce(
+    function (acc, t) { 
+      return Math.pow(t - mean, 2) + acc; 
+    }
+  ) / ts.length;
+  var sd = Math.sqrt(variance);
+
+  return {
+    mean     : mean,
+    sd       : sd,
+    variance : variance,
+    sec      : 1000 / mean,
+  };
 }
 
 BenchMarker.prototype.download = function () {

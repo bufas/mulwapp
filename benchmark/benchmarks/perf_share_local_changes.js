@@ -10,7 +10,8 @@ var perfShareLocalChanges = {
    * A string to prepend to every data file
    * @type {String}
    */
-  header        : ['# iter nodes fractionOfNodesChanged changesToEachNode'],
+  header        : ['# nodes mean deviation iterations/sec ' + 
+                   'fractionOfNodesChanged changesToEachNode'],
 
   /**
    * A setup function that is only run once.
@@ -108,17 +109,17 @@ var perfShareLocalChanges = {
     ];
 
     var testMatrix = [];
-    changesToEachNode.forEach(function (cten) {
-      nodes.forEach(function (n) {
-        testMatrix.push({
-          filename : 'nodes' + n + '_changes' + cten + '.dat',
-          fileData : {nodes: n, changesToEachNode: cten},
-          lineData : changeFrac.map(function (c) { 
-            return {changeFrac: c};
-          })
-        });
-      });
-    });
+    // changesToEachNode.forEach(function (cten) {
+    //   nodes.forEach(function (n) {
+    //     testMatrix.push({
+    //       filename : 'nodes' + n + '_changes' + cten + '.dat',
+    //       fileData : {nodes: n, changesToEachNode: cten},
+    //       lineData : changeFrac.map(function (c) { 
+    //         return {changeFrac: c};
+    //       })
+    //     });
+    //   });
+    // });
 
     nodes = [];
     for (var i = 10; i <= 1000; i += 30) nodes.push(i);
@@ -138,10 +139,12 @@ var perfShareLocalChanges = {
 
   makeLine      : function (args) {
     return [
-      args.res,
       args.nodes,
+      args.stats.mean,
+      args.stats.sd,
+      args.stats.sec,
       args.changeFrac,
-      args.changesToEachNode
+      args.changesToEachNode,
     ];
   }
 }
