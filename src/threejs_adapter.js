@@ -2,6 +2,8 @@
  * A Library Adapter Layer for ThreeJS 
  */
 
+CONSTRUCTORS_ALREADY_DECORATED = false;
+
 /**
  * Constructor for the ThreeJS Library Adapter Layer.
  * @param {object} config - A configuration object. Must contain a 'shareConf' 
@@ -64,10 +66,10 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
 
   (function aux (node, path, parentNode) {
     var docNode = {
-      'extra': node.mulwapp_create_spec,
-      'dependencies': this.getDependencies(node.mulwapp_create_spec),
-      'props': {}, 
-      'children': {}
+      'extra'        : node.mulwapp_create_spec,
+      'dependencies' : this.getDependencies(node.mulwapp_create_spec),
+      'props'        : {}, 
+      'children'     : {}
     };
 
     if (node instanceof THREE.Object3D) {
@@ -84,19 +86,18 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
       // Set properties in the doc node
       if (conf.watch_props) {
         conf.watch_props.forEach(function (prop) {
-          var val = node;
-          prop.split('.').forEach(function (step) {
-            val = val[step];
-          });
+          var val = prop.split('.').reduce(function (prev, step) { 
+            return prev[step]; 
+          }, node);
           docNode.props[prop] = val;
         });
       }
 
       // Recurse on children
       node.children.forEach(function (child, idx) {
-        var childPath = path.splice();
-        childPath.push(idx);
-        aux.call(this, child, childPath, docNode);
+        // var childPath = path.slice();
+        // childPath.push(idx);
+        aux.call(this, child, undefined, docNode);
       }, this);
     }
 
@@ -106,7 +107,7 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
     }, this)
 
     doc[node.mulwapp_guid] = docNode;
-  }).call(this, root, [], undefined);
+  }).call(this, root, undefined, undefined);
 
   return doc;
 }
@@ -118,6 +119,9 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
  * @param {Array} constructors - A list of constructors to intercept
  */
 ThreeAdapter.prototype.setupConstructorInterceptors = function (mulwapp, constructors) {
+  if (CONSTRUCTORS_ALREADY_DECORATED) return;
+  CONSTRUCTORS_ALREADY_DECORATED = true;
+
   var _this = this;
 
   constructors.forEach(function (name) {
@@ -378,7 +382,7 @@ ThreeAdapter.prototype.getConstructors = function () {
     "OrthographicCamera",
     "PerspectiveCamera",
     // "Light",
-    // "AmbientLight",
+    "AmbientLight",
     // "AreaLight",
     "DirectionalLight",
     // "HemisphereLight",
@@ -402,9 +406,9 @@ ThreeAdapter.prototype.getConstructors = function () {
     // "MaterialIdCount",
     // "LineBasicMaterial",
     // "LineDashedMaterial",
-    // "MeshBasicMaterial",
+    "MeshBasicMaterial",
     "MeshLambertMaterial",
-    // "MeshPhongMaterial",
+    "MeshPhongMaterial",
     // "MeshDepthMaterial",
     // "MeshNormalMaterial",
     // "MeshFaceMaterial",

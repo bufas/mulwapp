@@ -70,7 +70,7 @@ var perfApplyRemoteChanges = {
       return node.children[idx];
     }
 
-    var conf    = graphConfigurations.nary(4);
+    var conf    = graphConfigurations.flat();
     var factory = factories.default
     this.scene  = new SceneGraph(conf(args.nodes), factory);
 

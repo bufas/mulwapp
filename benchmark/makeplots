@@ -1,4 +1,7 @@
 #!/bin/bash
 
-gnuplot data/traverse_speed_vary_graph_structure/plot.txt
-gnuplot data/perf_share_local_changes/plot.txt
+gnuplot data/traverse_speed_vary_graph_structure/plot.gp
+gnuplot data/perf_share_local_changes/plot.gp
+gnuplot data/perf_apply_remote_changes/plot.gp
+gnuplot data/perf_threejs_renderer/plot.gp
+gnuplot data/latency/plot.gp

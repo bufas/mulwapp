@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Latency test</title>
+  </head>
+  <body>
+
+    <div id="canvasdiv"></div>
+
+    <button id="move_box" type="button">Move them boxes</button>
+    <input id="nodecnt" type="number" value="5">
+
+    <br>
+
+    <b>Sent:</b> 
+    <div id="timestamp_sent"></div>
+    <b>Received:</b>
+    <div id="timestamp_receive"></div>
+
+    <script src="/channel/bcsocket.js"></script> 
+    <script src="/share/share.uncompressed.js"></script>
+    <script src="/share/json.uncompressed.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.1.6/zepto.min.js"></script>
+
+    <script type="text/javascript" src="res/js/modified_mulwapp.js"></script>
+    <script type="text/javascript" src="res/js/modified_sharejs_adapter.js"></script>
+    <script type="text/javascript" src="res/js/mulwapp/threejs_adapter.js"></script>
+
+    <script type="text/javascript" src="res/js/stats.min.js"></script>
+    <script type="text/javascript" src="res/js/scripts.js"></script>
+  </body>
+</html>
