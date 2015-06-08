@@ -81,8 +81,11 @@ BenchMarker.prototype.runBench = function (name) {
 
     // Write the file
     var filePath = benchmark.dataDirectory + fileInfo.filename
-    var dataString = fileData.map(function (row) { 
-      return row.join(' '); 
+    var dataString = fileData.map(function (row) {
+      var strRow = row.map(function (el) {
+        return (el + '                    ').slice(0,20);
+      });
+      return strRow.join(' '); 
     }).join('\n');
     this.zipHandler.addFile(filePath, dataString);
   }, this);

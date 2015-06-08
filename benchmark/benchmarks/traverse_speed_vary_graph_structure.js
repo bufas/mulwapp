@@ -12,7 +12,7 @@ var traverseSpeedVaryGraphStructure = {
 
   dataDirectory : 'data/traverse_speed_vary_graph_structure/',
 
-  header : ['# nodes mean sd ops/sec'],
+  header : ['# nodes', 'mean', 'sd', 'ops/sec'],
 
   globalSetup : function () {
     var lalConfig = { shareConf: shareConfigurations.default };
