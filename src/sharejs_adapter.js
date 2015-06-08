@@ -42,9 +42,12 @@ SharejsAdapter.prototype.initialize = function (mulwapp) {
 SharejsAdapter.prototype.applyOperations = function (operations) {
   if (!this.doc) throw 'applyOperations called before doc is ready';
 
+  var sharejsops = [];
   operations.forEach(function (op) {
-    this.applyOperation(op, this.doc);
+    sharejsops.push(this.applyOperation(op, this.doc));
   }, this);
+
+  if (sharejsops.length != 0) this.doc.submitOp(sharejsops);
 }
 
 /**
@@ -52,19 +55,19 @@ SharejsAdapter.prototype.applyOperations = function (operations) {
  */
 SharejsAdapter.prototype.applyOperation = function (op, doc) {
   if (op.type == 'update prop') {
-    doc.at([op.guid, 'props', op.key]).set(op.val);
+    return {p:[op.guid, 'props', op.key], oi: op.val, od: false};
   }
   else if (op.type == 'insert child') {
-    doc.at([op.guid, 'children', op.key]).set(1); // 1 is a dummy value
+    return {p:[op.guid, 'children', op.key], oi: 1};
   }
   else if (op.type == 'delete child') {
-    doc.at([op.guid, 'children', op.key]).set();
+    return {p:[op.guid, 'children', op.key], od: false};
   }
   else if (op.type == 'insert object') {
-    doc.at([op.guid]).set(op.val);
+    return {p:[op.guid], oi: op.val};
   }
   else if (op.type == 'delete object') {
-    doc.at([op.guid]).set();
+    return {p:[op.guid], od: false};
   }
 }
 

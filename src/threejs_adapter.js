@@ -498,7 +498,7 @@ ThreeAdapter.prototype.getConstructors = function () {
     // "PlaneGeometry",
     // "PlaneBufferGeometry",
     // "RingGeometry",
-    // "SphereGeometry",
+    "SphereGeometry",
     // "TextGeometry",
     // "TorusGeometry",
     // "TorusKnotGeometry",
