@@ -68,7 +68,7 @@ ThreeAdapter.prototype.getDependencies = function (createSpec) {
 ThreeAdapter.prototype.calculateDiffModel = function (root) {
   var doc = {};
 
-  (function aux (node, path, parentNode) {
+  (function aux (node, parentNode) {
     var docNode = {
       'extra'        : node.mulwapp_create_spec,
       'dependencies' : this.getDependencies(node.mulwapp_create_spec),
@@ -77,7 +77,7 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
     };
 
     if (node instanceof THREE.Object3D) {
-      var conf = this.config.shareConf(node, path, root);
+      var conf = this.config.shareConf(node, undefined, root);
 
       // Return if this object is not to be synchronized
       if (!conf) return;
@@ -89,29 +89,28 @@ ThreeAdapter.prototype.calculateDiffModel = function (root) {
 
       // Set properties in the doc node
       if (conf.watch_props) {
-        conf.watch_props.forEach(function (prop) {
+        for (var i = 0; i < conf.watch_props.length; i++) {
+          var prop = conf.watch_props[i];
           var val = prop.split('.').reduce(function (prev, step) { 
             return prev[step]; 
           }, node);
           docNode.props[prop] = val;
-        });
+        }
       }
 
       // Recurse on children
-      node.children.forEach(function (child, idx) {
-        // var childPath = path.slice();
-        // childPath.push(idx);
-        aux.call(this, child, undefined, docNode);
-      }, this);
+      for (var i = 0; i < node.children.length; i++) {
+        aux.call(this, node.children[i], docNode);
+      }
     }
 
     // Recurse on dependencies from create spec
-    docNode.dependencies.forEach(function (dep) {
-      aux.call(this, this.lookupNodeByGuid(dep), undefined, undefined);
-    }, this)
+    for (var i = 0; i < docNode.dependencies.length; i++) {
+      aux.call(this, this.allLocalObjects[docNode.dependencies[i]], undefined);
+    }
 
     doc[node.mulwapp_guid] = docNode;
-  }).call(this, root, undefined, undefined);
+  }).call(this, root, undefined);
 
   return doc;
 }
@@ -495,8 +494,8 @@ ThreeAdapter.prototype.getConstructors = function () {
     // "ExtrudeGeometry",
     // "ShapeGeometry",
     // "LatheGeometry",
-    // "PlaneGeometry",
-    // "PlaneBufferGeometry",
+    "PlaneGeometry",
+    "PlaneBufferGeometry",
     // "RingGeometry",
     "SphereGeometry",
     // "TextGeometry",

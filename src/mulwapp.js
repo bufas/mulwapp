@@ -83,15 +83,10 @@ Mulwapp.prototype.setInitialized = function (root) {
  * @returns {Array} A list containing the union of the two object's keys
  */
 var keyUnion = function (obj1, obj2) {
-  var keys1 = Object.keys(obj1);
-  var keys2 = Object.keys(obj2);
-
-  var allKeysObj = {};
-  keys1.concat(keys2).forEach(function (key) {
-    allKeysObj[key] = true;
-  });
-
-  return Object.keys(allKeysObj);
+  var res = {};
+  for (var p in obj1) res[p] = true;
+  for (var p in obj2) res[p] = true;
+  return res;
 }
 
 /**
@@ -105,7 +100,7 @@ Mulwapp.prototype.diffNodes = function (diffNode, syncNode, guid) {
   var diff = [];
 
   // Check props
-  Object.keys(diffNode.props).forEach(function (key) {
+  for (var key in diffNode.props) {
     if (diffNode.props[key] != syncNode.props[key]) {
       diff.push({
         type: 'update prop',
@@ -114,13 +109,13 @@ Mulwapp.prototype.diffNodes = function (diffNode, syncNode, guid) {
         val: diffNode.props[key]
       });
     }
-  }, this);
+  };
 
   // Check children
   var diffChildren = diffNode.children;
   var syncChildren = syncNode.children;
   var allChildren = keyUnion(diffChildren, syncChildren);
-  allChildren.forEach(function (child) {
+  for (var child in allChildren) {
     if (child in diffChildren && child in syncChildren) {
       // Nothing has happened
     } 
@@ -140,7 +135,7 @@ Mulwapp.prototype.diffNodes = function (diffNode, syncNode, guid) {
         key: child
       });
     }
-  }, this);
+  }
 
   return diff;
 }
@@ -171,7 +166,7 @@ Mulwapp.prototype.diff = function (diffModel, syncModel, rootGuid) {
   }
 
   var allKeys = keyUnion(diffModel, syncModel);
-  allKeys.forEach(function (guid) {
+  for (var guid in allKeys) {
     if (guid in diffModel && !(guid in syncModel)) {
       // Object created
       var diffNode = diffModel[guid];
@@ -188,7 +183,7 @@ Mulwapp.prototype.diff = function (diffModel, syncModel, rootGuid) {
         guid: guid
       });
     }
-  }, this);
+  };
 
   return diff;
 }
