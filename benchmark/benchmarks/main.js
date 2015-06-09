@@ -58,6 +58,7 @@ BenchMarker.prototype.runBench = function (name) {
   var thisLine = 1;
 
   // Run through all files
+  console.profile('Lol');
   benchmark.testMatrix.forEach(function (fileInfo) {
     var fileData = [benchmark.header];
     var fileThis = $.extend({}, benchThis);
@@ -89,6 +90,7 @@ BenchMarker.prototype.runBench = function (name) {
     }).join('\n');
     this.zipHandler.addFile(filePath, dataString);
   }, this);
+  console.profileEnd();
 }
 
 BenchMarker.prototype.printRemainingTime = function (d, totalLines, linesDone) {
@@ -122,24 +124,28 @@ BenchMarker.prototype.timer = function (benchmark, lineInfo, testThis) {
     }
   }
 
-  ts.sort();
+  ts.sort(function (a, b) { return a - b; });
   ts.shift();
   ts.shift();
   ts.pop();
   ts.pop();
-  var mean = ts.reduce(function (acc, t) { return acc + t; }) / ts.length;
+  var mean = ts.reduce(function (a, b) { return a + b; }) / ts.length;
   var variance = ts.reduce(
     function (acc, t) { 
-      return Math.pow(t - mean, 2) + acc; 
+      return acc + Math.pow(t - mean, 2); 
     }
   ) / ts.length;
   var sd = Math.sqrt(variance);
+  var min = ts[0];
+  var max = ts[ts.length - 1];
 
   return {
     mean     : mean,
     sd       : sd,
     variance : variance,
     sec      : 1000 / mean,
+    min      : min,
+    max      : max,
   };
 }
 

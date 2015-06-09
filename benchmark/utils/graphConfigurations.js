@@ -73,7 +73,9 @@ graphConfigurations = {
    * @param {Number} count - The number of nodes (including scene)
    * @param {Number} n - The number of children per node
    */
-  nary : function (n) {
+  nary : function (n, type) {
+    type = type || 'Mesh';
+    
     return function (count) {
       n = n || 2;
 

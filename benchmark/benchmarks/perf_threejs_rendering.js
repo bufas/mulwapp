@@ -10,14 +10,16 @@ var perfThreeJSRender = {
    * A string to prepend to every data file
    * @type {String}
    */
-  header        : ['# nodes', 'mean', 'sd', 'ops/sec'],
+  header        : ['# nodes', 'mean', 'sd', 'min', 'max', 'ops/sec'],
 
   /**
    * A setup function that is only run once.
    */
   globalSetup   : function () {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setSize(500, 500);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.gammaInput = true;
+    this.renderer.gammaOutput = true;
   },
 
   /**
@@ -33,18 +35,48 @@ var perfThreeJSRender = {
    * Setup function that is called before every test
    */
   testSetup     : function (args) {
-    var conf = graphConfigurations.nary(4);
+    var conf = graphConfigurations.nary(4, 'BlackTourus');
     var factory = factories.default;
 
-    this.scene = new SceneGraph(conf(args.nodes), factory);
+    this.scene = new SceneGraph(conf(args.nodes), factory).root;
 
-    this.camera = new THREE.PerspectiveCamera(85, 500/500, 0.1, 1000);
-    this.camera.position.set(10, 10, 10);
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 300);
+    this.camera.position.set(0, 15, 150);
+    this.camera.lookAt(new THREE.Vector3());
+
+    this.scene.add(new THREE.AmbientLight(0x111111));
+
+    var c1 = 0xff0040;
+    var c2 = 0x0040ff;
+    var c3 = 0x80ff80;
+    var c4 = 0xffaa00;
+    var c5 = 0x00ffaa;
+    var c6 = 0xff1100;
+
+    var intensity = 2.5;
+    var distance = 100;
+
+    this.light1 = new THREE.PointLight(c1, intensity, distance);
+    this.light2 = new THREE.PointLight(c2, intensity, distance);
+    this.light3 = new THREE.PointLight(c3, intensity, distance);
+    this.light4 = new THREE.PointLight(c4, intensity, distance);
+    this.light5 = new THREE.PointLight(c5, intensity, distance);
+    this.light6 = new THREE.PointLight(c6, intensity, distance);
+
+    this.scene.add(this.light1);
+    this.scene.add(this.light2);
+    this.scene.add(this.light3);
+    this.scene.add(this.light4);
+    this.scene.add(this.light5);
+    this.scene.add(this.light6);
+
+    this.dlight = new THREE.DirectionalLight(0xffffff, 0.1);
+    this.dlight.position.set(0.5, -1, 0).normalize();
+    this.scene.add(this.dlight);
   },
 
   testCase      : function () {
-    this.renderer.render(this.scene.root, this.camera);
+    this.renderer.render(this.scene, this.camera);
   },
 
   /**
@@ -71,6 +103,8 @@ var perfThreeJSRender = {
       args.nodes,
       args.stats.mean,
       args.stats.sd,
+      args.stats.min,
+      args.stats.max,
       args.stats.sec,
     ];
   }
