@@ -7,21 +7,24 @@ var mulwapp = new Mulwapp(
   {
     lal: {
       shareConf: function(node, path, root) {
-        var res = {'watch_props': []};
-
-        if (node.type == 'Mesh' && path[0] > 2) {
-          res.watch_props = [
-            'position.x',
-            'position.y',
-            'position.z',
-          ];
+        if (node.type == 'Scene') {
+          return {};
+        }
+        if (node.type == 'Group') {
+          return {
+            watch_props : [
+              'position.x',
+              'position.y',
+              'position.z',
+            ]
+          };
         }
 
-        return res;
+        return false;
       },
     },
     sync: {
-      documentName: 'abekat1',
+      documentName: window.location.hash || 'defaultdoc',
     }
   }
 );
@@ -138,7 +141,15 @@ var placement = [
 ];
 
 var insertPieces = function(loader) {
-  placement.forEach(function (pos) {
+  var nextPieceIndex = 0;
+  var insertPiece = function () {
+    if (nextPieceIndex == placement.length) {
+      renderLoop();
+      return;
+    }
+    var pos = placement[nextPieceIndex];
+    nextPieceIndex++;
+
     loader.load('res/img/' + pos.type + '.obj', function (piece) {
       if (pos.scale) {
         piece.scale.set(pos.scale, pos.scale, pos.scale);
@@ -157,8 +168,11 @@ var insertPieces = function(loader) {
       });
       scene.add(piece);
       pieces.push(piece);
+
+      insertPiece();
     });
-  });
+  }
+  insertPiece();
 }
 
 // Constants
@@ -171,11 +185,9 @@ var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(sceneWidth, sceneHeight);
 renderer.setClearColor(0xdddddd, 1);
 
-insertPieces(new THREE.OBJLoader());
-
 // Create the chessboard with the center of the top surface at the origin
 var board = new THREE.Mesh(
-  new THREE.PlaneBufferGeometry(8, 8, 1, 1),
+  new THREE.PlaneGeometry(8, 8, 1, 1),
   new THREE.MeshLambertMaterial({
     map : THREE.ImageUtils.loadTexture('res/img/chessboard.jpg')
   })
@@ -185,7 +197,7 @@ scene.add(board);
 
 // Create a huge invisible plane (for dragging)
 var plane = new THREE.Mesh(
-  new THREE.PlaneBufferGeometry(2000, 2000, 10, 10),
+  new THREE.PlaneGeometry(2000, 2000, 10, 10),
   new THREE.MeshBasicMaterial({ 
     color       : 0x000000, 
     opacity     : 0.25, 
@@ -198,13 +210,13 @@ scene.add(plane);
 
 // Setup camera
 var camera = new THREE.PerspectiveCamera(85, sceneWidth/sceneHeight, 0.1, 1000);
-camera.position.set(0, 6, 5);
+camera.position.set(0, 6, 0);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
+scene.add(camera);
 
 // Insert a light source
 var light = new THREE.PointLight(0xdfdfdf);
-light.position.copy(camera.position.clone().add(new THREE.Vector3(4, 4, 0)));
-scene.add(light);
+camera.add(light);
 
 // Add canvas to the DOM
 jqRendererElement = $(renderer.domElement);
@@ -217,19 +229,26 @@ var dragHandler = new DragHandler(jqRendererElement, pieces, plane);
 var stats = createStatsModule();
 
 // Set button actions
-$('#btn-add-elem').on('click', function() { 
-  createPiece(0, 0, 0xff0000); 
+$('#black').on('click', function() { 
+  camera.position.set(0, 6, 5);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
 });
-$('#btn-rem-elem').on('click', function() {
-  var p = pieces.pop();
-  scene.remove(p);
+$('#white').on('click', function() {
+  camera.position.set(0, 6, -5);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+});
+$('#spectate').on('click', function() {
+  camera.position.set(-5, 6, 0);
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
 });
 
+insertPieces(new THREE.OBJLoader());
+
 // Create and start the render loop
-(function renderLoop() {
+function renderLoop() {
   requestAnimationFrame(renderLoop);
   stats.begin();
   mulwapp.animationFrameFn(scene);
   renderer.render(scene, camera);
   stats.end();
-})();
+};
