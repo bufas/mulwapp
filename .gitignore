@@ -1,5 +1,5 @@
 .DS_Store
 node_modules/
 bower_components/
-benchmark/data/
+benchmark/data/*/*.dat
 benchmark/plots/
